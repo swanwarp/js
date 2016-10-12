@@ -8,5 +8,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="mootools" level="application" />
+    <orderEntry type="library" name="sprintf" level="application" />
+    <orderEntry type="library" name="BVTouchable" level="application" />
+    <orderEntry type="library" name="TangleKit" level="application" />
+    <orderEntry type="library" name="Tangle" level="application" />
+    <orderEntry type="library" name="d3.v3" level="application" />
   </component>
 </module>
