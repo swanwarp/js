@@ -7,147 +7,283 @@
 </head>
 <body>
 <script type="text/javascript">
-        var w = 500;
-        var h = 500;
+        var w = 540;
+        var h = 1000;
         var barPadding = 1;
+        var low = 30;
+
+        var number = 100;
+
+        var data = [];
+
+        function shuffle(a) {
+            var j, x, i;
+
+            for (i = a.length; i; i--) {
+                j = Math.floor(Math.random() * i);
+                x = a[i - 1];
+                a[i - 1] = a[j];
+                a[j] = x;
+            }
+        }
+
+        constructor = function() {
+            var user_number = [];
+            for(var i = 0; i < number; i++) {
+                user_number.push(1);
+            }
+
+            var idea_column = [];
+            var rs_column = [];
+            var ps_column = [];
+
+            for(var i = 0; i < number; i++) {
+                idea_column.push(Math.random() * 10 > 5 ? 1 : 0);
+                rs_column.push(Math.random() * 10 > 5 ? 1 : 0);
+                ps_column.push(Math.random() * 10 > 5 ? 1 : 0);
+
+                if((idea_column[i] + rs_column[i] + ps_column[i]) == 0) {
+                    switch(Math.round(Math.random() * 2)) {
+                        case 0: idea_column[i] = 1; break;
+                        case 1: rs_column[i] = 1; break;
+                        case 2: ps_column[i] = 1; break;
+                    }
+                }
+            }
+
+            var first = [], second = [], third = [];
+            var ids = ["IDEA", "RS", "PS"];
+
+            for(var i = 0; i < number; i++) {
+                var n = idea_column[i] + rs_column[i] + ps_column[i];
+                shuffle(ids);
+
+                first.push(ids[0]);
+                if(n > 1) {
+                    second.push(ids[1]);
+                } else {
+                    second.push("");
+                }
+                if(n > 2) {
+                    third.push(ids[2]);
+                } else {
+                    third.push("");
+                }
+            }
+
+            data.push(user_number, idea_column, rs_column, ps_column, first, second, third);
+        }
 
         var products = [
             "id",
-            "ws",
-            "cs"
+            "rs",
+            "ps"
         ];
 
-        function dataConstructor(num, idea, ws, cs) {
-                this.num = num
-                this.pros = [idea, ws, cs];
-                this.products = products;
+        function filter(arg) {
+
+                id = arg[0];
+                r = arg[1];
+                p = arg[2];
+                f = arg[3];
+                s = arg[4];
+                t = arg[5];
+
+                var idea_column = 0;
+                var rs_column = 0;
+                var ps_column = 0;
+
+                var first_idea = 0;
+                var second_idea = 0;
+                var third_idea = 0;
+
+                var first_rs = 0;
+                var second_rs = 0;
+                var third_rs = 0;
+
+                var first_ps = 0;
+                var second_ps = 0;
+                var third_ps = 0;
+
+                var filter_all = function(i) {
+                    return (id == 1 && data[1][i] == 1 || id == 0) &&
+                        (r == 1 && data[2][i] == 1 || r == 0) &&
+                        (p == 1 && data[3][i] == 1 || p == 0);
+                }
+
+                var filter_main = function(m, i) {
+                    return (id == 1 && data[1][i] == 1 || (id == 0 && m != "idea") || (m == "idea" && data[1][i] == 1)) &&
+                        (r == 1 && data[2][i] == 1 || (r == 0  && m != "rs")  || (m == "rs" && data[2][i] == 1)) &&
+                        (p == 1 && data[3][i] == 1 || (p == 0 && m != "ps") || (m == "ps" && data[3][i] == 1));
+                }
+
+                var filter_fst = function(i) {
+                    return (data[4][i] == f || f == "") &&
+                        (data[5][i] == s || s == "") &&
+                        (data[6][i] == t || t == "");
+                }
+
+                var filter_first = function(m, i) {
+                     return (data[4][i] == m && (f == m || f == "")) &&
+                            (data[5][i] == s || s == "") &&
+                            (data[6][i] == t || t == "");
+                }
+
+                var filter_second = function(m, i) {
+                     return (data[4][i] == f || f == "") &&
+                            (data[5][i] == m && (s == m || s == "")) &&
+                            (data[6][i] == t || t == "");
+                }
+
+                var filter_third = function(m, i) {
+                     return (data[4][i] == f || f == "") &&
+                            (data[5][i] == s || s == "") &&
+                            (data[6][i] == m && (t == m || t == ""));
+                }
+
+                for(var i = 0; i < number; i++) {
+                    if(filter_main("idea", i) && filter_fst(i)) {
+                            idea_column += data[0][i];
+                        }
+
+                    if(filter_main("rs", i) && filter_fst(i)) {
+                            rs_column += data[0][i];
+                        }
+
+                    if(filter_main("ps", i) && filter_fst(i)) {
+                            ps_column += data[0][i];
+                        }
+
+                    if(filter_first("IDEA", i) && filter_all(i)) {
+                            first_idea += data[0][i];
+                        }
+
+                    if(filter_second("IDEA", i) && filter_all(i)) {
+                            second_idea += data[0][i];
+                        }
+
+                    if(filter_third("IDEA", i) && filter_all(i)) {
+                            third_idea += data[0][i];
+                        }
+
+                    if(filter_first("RS", i) && filter_all(i)) {
+                            first_rs += data[0][i];
+                        }
+
+                    if(filter_second("RS", i) && filter_all(i)) {
+                            second_rs += data[0][i];
+                        }
+
+                    if(filter_third("RS", i) && filter_all(i)) {
+                            third_rs += data[0][i];
+                        }
+
+                    if(filter_first("PS", i) && filter_all(i)) {
+                            first_ps += data[0][i];
+                        }
+
+                    if(filter_second("PS", i) && filter_all(i)) {
+                            second_ps += data[0][i];
+                        }
+
+                    if(filter_third("PS", i) && filter_all(i)) {
+                            third_ps += data[0][i];
+                        }
+
+                }
+
+                return [[idea_column, rs_column, ps_column], [first_idea, first_rs, first_ps], [second_idea, second_rs, second_ps], [third_idea, third_rs, third_ps]];
         }
 
-        var users = [
-            new dataConstructor(0, 100, 50, 15),
-            new dataConstructor(1, 50, 70, 5),
-            new dataConstructor(2, 15, 5, 50)
-        ];
+        var mask = [0, 0, 0, "", "", ""];
+
+        var update_irp = function(o) {
+                mask[o] ^= 1;
+            };
+
+        var update_fst = function(o, k) {
+                if(mask[k] == o) {
+                    mask[k] = "";
+                } else {
+                    mask[k] = o;
+                }
+            };
+        var old_w = [];
+
+        function init(data, svg) {
+                var offset = 0;
+                var new_w = [];
+
+                for(var j = 0; j < data.length; j++) {
+                    new_w.push([]);
+
+                    svg.selectAll("rect" + j)
+                    .data(data[j])
+                    .enter()
+                    .append("rect")
+                    .attr("id", j)
+                    .attr("x", 0)
+                    .attr("y", function(d, i) {
+                        return i * (h / (data[j].length * 10)) + offset + 30;
+                    })
+                    .attr("width", function(d) {
+                        return 0;
+                    })
+                    .attr("height", h / (data[j].length * 10) - barPadding)
+                    .attr("fill", function(d) {
+                        return "rgb(255, 0, " + d + ")";
+                    })
+                    .on("click", function(d, i, o) {
+                        u = parseInt(o[i].id);
+
+                        switch(u) {
+                            case 0: update_irp(i); break;
+                            case 1: case 2: case 3: switch(i) {
+                                        case 0: update_fst("IDEA", u + 2); break;
+                                        case 1: update_fst("RS", u + 2); break;
+                                        case 2: update_fst("PS", u + 2); break;
+                                    }; break;
+                        }
+
+                        update(filter(mask), svg);
+                    })
+                    .transition()
+                    .duration(300)
+                    .attr("width", function(d) {
+                        return d*4;
+                    })
+
+                    offset += (data[j].length - 1) * (w / (data[j].length * 10)) + 90;
+                }
+
+                old_w = new_w;
+        }
+
+        function update(data, svg) {
+                var offset = 0;
+
+                for(var j = 0; j < data.length; j++) {
+                    var rects = svg.selectAll("rect" + j)
+                    .data(data)
+                    .selectAll("rect")
+                    .enter()
+                    .attr("width", width)
+                    .transition()
+                        .duration(400)
+                        .attr("width", function(d) {
+                            return d*4;
+                        });
+                }
+        }
 
         var svg = d3.select("body")
         .append("svg")
         .attr("width", w)
         .attr("height", h);
 
-        function update(users, svg, getNum) {
-                function retConstructor(x, y, he, wi, color, text) {
-                    this.x = x;
-                    this.y = y;
-                    this.h = he;
-                    this.w = wi;
-                    this.color = color;
-                    this.text = text;
-                }
+        constructor();
 
-                var retData = [];
-
-                for(var i = 0; i < users.length; i++) {
-                    var num = 0;
-
-                    switch(getNum) {
-                        case 1: num = 1; break;
-                        case 2: num = 2; break;
-                        case 3: num = 3; break;
-                        case -1: num = i; break;
-                    }
-
-                    console.log(num);
-
-                    var x = i * (w / (users.length * 4));
-                    var y = h - (users[i].pros[num] * 4)
-                    var wi = w / (users.length * 4) - barPadding;
-                    var he = users[i].pros[num] * 4;
-                    var color = "rgb(255, 0, " + (users[i].pros[num]) + ")";
-                    var text = users[i].pros[num] + " " + users[i].products[num]
-
-                    retData.push(new retConstructor(
-                        x,
-                        y,
-                        he,
-                        wi,
-                        color,
-                        text
-                    ));
-
-                    console.log(retData[i]);
-                }
-
-
-                svg.selectAll("rect")
-                .data(retData)
-                .enter()
-                .append("rect")
-                .attr("x", function(d) {
-                    return d.x;
-                })
-                .attr("y", function(d) {
-                    return d.y;
-                })
-                .attr("width", w / (users.length * 4) - barPadding)
-                .attr("height", function(d) {
-                    return d.h;
-                })
-                .attr("fill", function(d) {
-                    return d.color;
-                })
-
-                svg.selectAll("text")
-                .data(retData)
-                .enter()
-                .append("text")
-                .text(function(d) {
-                    return d.text;
-                })
-                .attr("x", function(d, i) {
-                    return d.x + 3;
-                })
-                .attr("y", function(d) {
-                    return d.y + 15;
-                })
-                .attr("font-family", "sans-serif")
-                .attr("font-size", "11px")
-                .attr("fill", "black");
-
-
-                return retData;
-        }
-
-        var info = update(users, svg, -1);
-        var now = -1;
-
-        function In(coords) {
-                for(var i = 0; i < info.length; i++) {
-                    if((coords[0] < (info[i].x + info[i].w)) && (coords[1] > (info[i].y))) {
-                        return i;
-                    }
-                }
-
-                return -1;
-        }
-
-        svg.on('click', function() {
-            var coords = d3.mouse(this);
-            var n = In(coords);
-            if(n != -1) {
-                svg.selectAll("rect").remove();
-                svg.selectAll("text").remove();
-
-                if(now != n) {
-                    now = n;
-                    info = update(users, svg, n);
-                } else {
-                    now = -1;
-                    var info = update(users, svg, -1);
-                }
-            }
-        });
-
-
+        init(filter(mask), svg);
 
         </script>
 </body>

@@ -55,6 +55,173 @@
         .attr("font-family", "sans-serif")
         .attr("font-size", "11px")
         .attr("fill", "white");
+
+
+
+
+
+                svg.selectAll("rect" + j)
+                    .data(data[j])
+                    .enter()
+                    .append("rect")
+                    .attr("id", j)
+                    .attr("x", function(d, i) {
+                        xs.push(i * (w / (data[j].length * 6)) + offset);
+                        return i * (w / (data[j].length * 6)) + offset;
+                    })
+                    .attr("y", function(d, i) {
+                        if(old_y.length == 0) {
+                            return h - low*2;
+                        } else {
+                            return old_y[j][i];
+                        }
+                    })
+                    .attr("width", w / (data[j].length * 6) - barPadding)
+                    .attr("height", function(d, i) {
+                        if(old_h.length == 0) {
+                            return 0;
+                        } else {
+                            return old_h[j][i];
+                        }
+                    })
+                    .attr("fill", function(d) {
+                        return "rgb(255, 0, " + d + ")";
+                    })
+                    .on("click", function(d, i, o) {
+                        u = parseInt(o[i].id);
+
+                        switch(u) {
+                            case 0: update_irp(i); break;
+                            case 1: case 2: case 3: switch(i) {
+                                        case 0: update_fst("IDEA", u + 2); break;
+                                        case 1: update_fst("RS", u + 2); break;
+                                        case 2: update_fst("PS", u + 2); break;
+                                    }; break;
+                        }
+
+                        console.log(mask);
+                        svg.selectAll("*").remove();
+                        update(filter(mask), svg);
+                    })
+                    .transition()
+			        .duration(400)
+			        .attr("y", function(d, i) {
+			            new_y[j].push(h - (d * 4) - low*2);
+                        return h - (d * 4) - low*2;
+                    })
+			        .attr("height", function(d) {
+			            new_h[j].push(d*4);
+			            return d * 4;
+			        });
+
+
+
+
+
+
+
+                    svg.selectAll("rect" + j)
+                    .data(data[j])
+                    .enter()
+                    .append("rect")
+                    .attr("id", j)
+                    .attr("x", 0)
+                    .attr("y", function(d, i) {
+                        return i * (h / (data[j].length * 10)) + offset + 30;
+                    })
+                    .attr("width", function(d, i) {
+                        if(old_w.length != 0) {
+                            return old_w[j][i];
+                        }
+                        return 0;
+                    })
+                    .attr("height", h / (data[j].length * 10) - barPadding)
+                    .attr("fill", function(d) {
+                        return "rgb(255, 0, " + d + ")";
+                    })
+                    .on("click", function(d, i, o) {
+                        u = parseInt(o[i].id);
+
+                        switch(u) {
+                            case 0: update_irp(i); break;
+                            case 1: case 2: case 3: switch(i) {
+                                        case 0: update_fst("IDEA", u + 2); break;
+                                        case 1: update_fst("RS", u + 2); break;
+                                        case 2: update_fst("PS", u + 2); break;
+                                    }; break;
+                        }
+
+                        console.log(mask);
+                        svg.selectAll("*").remove();
+                        update(filter(mask), svg);
+                    }).transition()
+			        .duration(400)
+			        .attr("width", function(d) {
+			            new_w[j].push(d*4);
+			            return d * 4;
+			        });
+
+
+
+
+
+
+
+
+        var svg = d3.select("body")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h);
+
+
+
+
+
+
+
+
+
+
+
+                    svg.selectAll("text2" + j)
+                    .data([0])
+                    .enter()
+                    .append("text")
+                    .text(function() {
+                        console.log(1);
+                        switch(j) {
+                            case 0: return "ALL";
+                            case 1: return "FIRST";
+                            case 2: return "SECOND";
+                            case 3: return "THIRD";
+                        }
+                    })
+                    .attr("x", xs[0])
+                    .attr("y", h - low/1.5)
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", "16px")
+                    .attr("fill", "black");
+
+                    svg.selectAll("text" + j)
+                    .data(data[j])
+                    .enter()
+                    .append("text")
+                    .text(function(d, i) {
+                        switch(i) {
+                            case 0: return "idea";
+                            case 1: return "rs";
+                            case 2: return "ps";
+                        }
+                    })
+                    .attr("x", function(d, i) {
+                        return xs[i] + 2;
+                    })
+                    .attr("y", function(d) {
+                        return h - low * 1.5;
+                    })
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", "13px")
+                    .attr("fill", "black");
         </script>
 </body>
 
