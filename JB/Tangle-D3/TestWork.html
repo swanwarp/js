@@ -208,16 +208,18 @@
                     mask[k] = o;
                 }
             };
-        var old_w = [];
+
+        var rects = [];
 
         function init(data, svg) {
                 var offset = 0;
-                var new_w = [];
 
                 for(var j = 0; j < data.length; j++) {
-                    new_w.push([]);
+                    rects.push(
+                        svg.selectAll("rect" + j)
+                    );
 
-                    svg.selectAll("rect" + j)
+                    rects[j]
                     .data(data[j])
                     .enter()
                     .append("rect")
@@ -251,28 +253,24 @@
                     .duration(300)
                     .attr("width", function(d) {
                         return d*4;
-                    })
+                    });
 
                     offset += (data[j].length - 1) * (w / (data[j].length * 10)) + 90;
                 }
-
-                old_w = new_w;
         }
 
         function update(data, svg) {
-                var offset = 0;
-
                 for(var j = 0; j < data.length; j++) {
-                    var rects = svg.selectAll("rect" + j)
-                    .data(data)
+                    rects[j]
                     .selectAll("rect")
-                    .enter()
-                    .attr("width", width)
+                    .data(data[j])
+                    .exit()
                     .transition()
-                        .duration(400)
-                        .attr("width", function(d) {
-                            return d*4;
-                        });
+                    .duration(300)
+                    .attr("width", function(d) {
+                        console.log(1);
+                        return d*4;
+                    });
                 }
         }
 
@@ -284,6 +282,7 @@
         constructor();
 
         init(filter(mask), svg);
+
 
         </script>
 </body>
