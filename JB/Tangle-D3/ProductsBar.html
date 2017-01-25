@@ -11,7 +11,7 @@
     }
 
     .bar:hover{
-        fill: brown;
+        fill: peachpuff;
     }
 
 </style>
@@ -26,7 +26,7 @@
         height = 1150 - margin.bottom,
         barPadding = 10,
         duration = 1000,
-        head_height = 50;
+        head_height = 100;
 
     function INIT() {
         d3.csv("products.csv", function (prod) {
@@ -77,10 +77,6 @@
                     }));
                 }
 
-                var head = d3.select("body").append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", head_height);
-
                 var svg = d3.select("body").append("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height);
@@ -91,7 +87,8 @@
                 var bar = g.selectAll(".bar");
 
                 var rects = [],
-                    text = [];
+                    text = [],
+                    product_bars = [];
 
                 for (var i = 0; i < data.length; i++) {
                     rects.push(bar.append("rect" + i)
@@ -103,6 +100,11 @@
                         .data(data[i])
                         .enter()
                         .append("text"));
+
+                    product_bars.push(bar.append("ProductRect" + i)
+                        .data(data[i])
+                        .enter()
+                        .append("rect"));
                 }
 
                 function init() {
@@ -132,6 +134,33 @@
                                         break;
                                 }
 
+                                product_bars[u]
+                                    .transition()
+                                    .duration(duration)
+                                    .attr("fill", function (d, r, y) {
+                                        if(r == i) {
+                                            if(u == 0) {
+                                                if (mask[r] == 1) {
+                                                    return "black";
+                                                } else {
+                                                    return "pink";
+                                                }
+                                            } else {
+                                                if(mask[u + 2] == products[r]) {
+                                                    return "black";
+                                                } else {
+                                                    return "pink";
+                                                }
+                                            }
+                                        } else {
+                                            if(u == 0) {
+                                                return y[r].attributes.fill.nodeValue;
+                                            } else {
+                                                return "pink";
+                                            }
+                                        }
+                                    });
+
                                 update();
                             })
                             .transition()
@@ -149,7 +178,7 @@
                             .attr("id", j)
                             .attr("font-family", "sans-serif")
                             .attr("font-size", "16px")
-                            .attr("fill", "white")
+                            .attr("fill", "Honeydew")
                             .transition()
                             .duration(duration)
                             .attr("x", function(d) { return x(d) - textLength(d) * 11 + 1 + margin.left; })
@@ -160,7 +189,17 @@
                                 return function(t) {
                                     that.text(d3.format(",d")(i(t)));
                                 };
+                            });
+
+                        product_bars[j]
+                            .attr("id", j)
+                            .attr("x", 0)
+                            .attr("y", function (d, i) {
+                                return y[j](i);
                             })
+                            .attr("height", height / (data[j].length * 8) - barPadding)
+                            .attr("width", margin.left)
+                            .attr("fill", "pink");
 
                         bar.append("ProductText" + j)
                             .data(data[j])
@@ -169,9 +208,9 @@
                             .attr("id", j)
                             .attr("x", function (d, i) {
                                 switch (i) {
-                                    case 0: return 0;
-                                    case 1: return margin.left - 25;
-                                    case 2: return margin.left - 27;
+                                    case 0: return 1;
+                                    case 1: return margin.left - 30;
+                                    case 2: return margin.left - 31;
                                 }
                             })
                             .attr("y", function (d, i) {
@@ -186,13 +225,28 @@
                             })
                             .attr("font-family", "sans-serif")
                             .attr("font-size", "16px")
-                            .attr("fill", "black")
+                            .attr("fill", "grey")
 
-                        g
-                            .append("text")
-                            .attr("x", margin.left)
+                        g.append("rect")
+                            .attr("x", 0)
                             .attr("y", function () {
-                                console.log(1)
+                                return y[j](0) - height / (data[j].length * 8) + 12;
+                            })
+                            .attr("width", function() {
+                                switch (j) {
+                                    case 0: return 66;
+                                    case 1: return 96;
+                                    case 2: return 128;
+                                    case 3: return 98;
+                                }
+                            })
+                            .attr("height", height / (data[j].length * 8) - 12)
+                            .attr("fill", "SkyBlue")
+
+
+                        g.append("text")
+                            .attr("x", margin.left/2)
+                            .attr("y", function () {
                                 return y[j](0) - 8;
                             })
                             .text(function () {
@@ -205,7 +259,7 @@
                             })
                             .attr("font-family", "sans-serif")
                             .attr("font-size", "25px")
-                            .attr("fill", "green")
+                            .attr("fill", "SlateGray")
                     }
                 }
 
