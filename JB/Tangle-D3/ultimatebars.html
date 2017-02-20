@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>D3 Test</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+<style>
+    .bar {
+        fill: steelblue;
+    }
+
+    .bar:hover{
+        fill: peachpuff;
+    }
+</style>
+<body>
+<script type="text/javascript">
+
+    function INIT() {
+        d3.csv("new_data.csv", function (prod) {
+            function has(arr, arg) {
+                for(var i = 0; i < arr.length; i++) {
+                    if(arr[i] == arg) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            function parseLabel(label) {
+                for(var i = 0; i < label.length; i++) {
+                    if(label.charAt(i) == '.' || label.charAt(i) == '?') {
+                        return [label.substr(0, i), label.substr(i + 1, label.length)];
+                    }
+                }
+            }
+
+            function getIndex(arr, e) {
+                for(var i = 0; i < arr.length; i++) {
+                    if(e == arr[i]) {
+                        return i;
+                    }
+                }
+
+                return -1;
+            }
+
+            function buildData() {
+                var filter = function (pos1) {
+                    for(var i = 1; i < prod.columns.length; i++) {
+                        if(!(
+                                (mask[mask_indexes[i - 1][0]][mask_indexes[i - 1][1]] == 0) ||
+                                (prod[pos1][prod.columns[i]] == mask[mask_indexes[i - 1][0]][mask_indexes[i - 1][1]])
+                            )) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                };
+
+
+
+                var pre_data = [], pre_map = [];
+
+                for(var i = 0; i < titles.length; i++) {
+                    pre_data.push([]);
+
+                    for(var j = 0; j < names.get(titles[i]).length; j++) {
+                        pre_data[i].push(0);
+                    }
+                }
+
+                for(var i = 0; i < prod.length; i++) {
+                    for(var j = 1; j < prod.columns.length; j++) {
+                        var k = getIndex(titles, labels[j - 1][0]);
+                        var ik = getIndex(names.get(titles[k]), labels[j - 1][1]);
+
+                        if(prod[i][prod.columns[j]] == 1 && filter(i)) {
+                            pre_data[k][ik] += parseInt(prod[i].amount);
+                        }
+                    }
+                }
+
+                for(var i = 0; i < pre_data.length; i++) {
+                    pre_map.push([titles[i], pre_data[i]]);
+                }
+
+                return pre_data;
+            }
+
+            function textLength(num) {
+                var temp = num,
+                    ret = 1;
+
+                while(temp >= 10) {
+                    ret++;
+                    temp = temp/10;
+                }
+
+                return ret;
+            }
+
+            var products = [];
+            var titles = [];
+            var labels = [];
+            var pre_map = [];
+            var mask = [];
+            var mask_indexes = [];
+
+            for(var i = 1; i < prod.columns.length; i++) {
+                var temp = parseLabel(prod.columns[i]);
+
+                labels.push(parseLabel(prod.columns[i]));
+
+                if(!has(products, temp[1])) {
+                    products.push(temp[1]);
+                }
+
+                if(!has(titles, temp[0])) {
+                    titles.push(temp[0]);
+                }
+            }
+
+            for(var i = 0; i < labels.length;) {
+                var curr = labels[i][0];
+                var temp = [];
+
+                while(i < labels.length && curr == labels[i][0]) {
+                    temp.push(labels[i++][1]);
+                }
+
+                pre_map.push([curr, temp]);
+            }
+
+            var names = new Map(pre_map);
+
+            for(var i = 0; i < titles.length; i++) {
+                mask.push([0].concat(new Array(names.get(titles[i]).length).fill(0)));
+            }
+
+            for(var i = 1; i < prod.columns.length; i++) {
+                mask_indexes.push([]);
+            }
+
+            var k = 0, o = 1;
+            var curr = labels[0][0];
+            for(var i = 0; i < labels.length; i++) {
+                if(labels[i][0] != curr) {
+                    curr = labels[i][0];
+                    k++;
+                    o = 1;
+                }
+
+                mask_indexes[i].push(k);
+                mask_indexes[i].push(o++)
+            }
+
+            var pre_data = buildData();
+
+
+            var barPadding = 1;
+            var low = 30;
+
+            var margin = {top: 20, right: 20, bottom: 30, left: 40, text: 16},
+                width = 600 + margin.left,
+                height = 300*products.length - margin.bottom,
+                barPadding = 10,
+                duration = 1000;
+
+            var svg = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height);
+
+            var g = svg.append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var bar = g.selectAll(".bar");
+
+            var rects = [],
+                text = [],
+                numbers = [];
+
+            var x = d3.scaleLinear().rangeRound([margin.left, width - margin.left]),
+                y = [];
+
+            var l = 0;
+
+            for (var i = 0; i < pre_data.length; i++) {
+                if (i != 0) {
+                    l += low;
+                }
+
+                y.push(d3.scaleBand().rangeRound([l + margin.top, (height - 500) / pre_data.length + l + margin.top]).padding(0.1));
+                l += (height - 500) / pre_data.length;
+            }
+
+            x.domain([0, d3.max(pre_data, function (d) {
+                return d3.max(d);
+            })]);
+
+            for (var j = 0; j < pre_data.length; j++) {
+                y[j].domain(pre_data[j].map(function (d, i) {
+                    return i;
+                }));
+            }
+
+            for (var i = 0; i < pre_data.length; i++) {
+                rects.push(bar.append("rect" + i)
+                    .data(pre_data[i])
+                    .enter()
+                    .append("rect"));
+
+                text.push(bar.append("text" + i)
+                    .data(pre_data[i])
+                    .enter()
+                    .append("text"));
+
+                numbers.push(bar.append("numbers" + i)
+                    .data(pre_data[i])
+                    .enter()
+                    .append("text"));
+            }
+
+            function init() {
+                for (var j = 0; j < pre_data.length; j++) {
+                    rects[j]
+                        .attr("class", "bar")
+                        .attr("id", j)
+                        .attr("x", margin.left)
+                        .attr("y", function (d, i) {
+                            return y[j](i);
+                        })
+                        .attr("width", function (d) {
+                            return 0;
+                        })
+                        .attr("height", height / (pre_data[j].length * 8) - barPadding)
+                        .on("click", function (d, i, o) {
+                            u = parseInt(o[i].id);
+
+                            if(mask[u][i + 1] == 0) {
+                                mask[u][i + 1] = 1;
+                            } else {
+                                mask[u][i + 1] = 0;
+                            }
+
+                            if(mask[u] == 1) {
+                                for(var z = 1; z < mask[u].length; z++) {
+                                    if(z != i + 1) {
+                                        mask[u][z] = 0;
+                                    }
+                                }
+                            }
+
+                            update();
+                        })
+                        .transition()
+                        .duration(duration)
+                        .attr("width", function (d) {
+                            return x(d);
+                        })
+
+                    text[j]
+                        .attr("id", j)
+                        .attr("x", 0)
+                        .attr("y", function (d, i) {
+                            return y[j](i) + (height / (pre_data[j].length * 8))/2;
+                        })
+                        .text(function (d, i) {
+                            return names.get(titles[j])[i];
+                        })
+                        .attr("font-family", "sans-serif")
+                        .attr("font-size", "16px")
+                        .attr("fill", "grey")
+
+                     numbers[j]
+                         .attr("x", margin.left)
+                         .attr("y", function (d, i) {
+                             return y[j](i) + (height / (pre_data[j].length * 8))/2;
+                         })
+                         .text(0)
+                         .attr("id", j)
+                         .attr("font-family", "sans-serif")
+                         .attr("font-size", "16px")
+                         .attr("fill", "Honeydew")
+                         .transition()
+                         .duration(duration)
+                         .attr("x", function(d) { return x(d) - textLength(d) * 11 + 1 + margin.left; })
+                         .attrTween("text", function(d, i, o) {
+                             var i = d3.interpolate(0, d),
+                                 that = d3.select(this);
+
+                             return function(t) {
+                                 that.text(d3.format(",d")(i(t)));
+                             };
+                         });
+                }
+            }
+            
+            function update() {
+                pre_data = buildData();
+
+                for (var j = 0; j < pre_data.length; j++) {
+                    rects[j]
+                        .transition()
+                        .duration(duration)
+                        .attr("width", function (d, i) {
+                            return x(pre_data[j][i]);
+                        });
+
+                    numbers[j]
+                        .transition()
+                        .duration(duration)
+                        .attr("x", function (d, i) {
+                            return x(pre_data[j][i]) - textLength(pre_data[j][i]) * 11 + 1 + margin.left;
+                        })
+                        .attrTween("text", function(d, i, o) {
+                            var that = d3.select(this),
+                                id = parseInt(o[i].id),
+                                dd = o[i].__data__,
+                                k = d3.interpolate(dd, pre_data[id][i]);
+
+                            o[i].__data__ = pre_data[id][i];
+
+                            return function(t) {
+                                that.text(d3.format(",d")(k(t)));
+                            };
+                        })
+                }
+            }
+
+            init();
+        });
+    }
+
+    INIT();
+</script>
+</body>
+</html>

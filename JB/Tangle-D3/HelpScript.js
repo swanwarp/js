@@ -69,7 +69,7 @@ function filter(arg, data, products) {
     return [all_bar].concat(fst_bar);
 }
 
-var mask = [0, 0, 0, "-", "-", "-"];
+var mask;
 
 var update_irp = function (o) {
     mask[o] ^= 1;
@@ -94,4 +94,3 @@ function textLength(num) {
 
     return ret;
 }
-
