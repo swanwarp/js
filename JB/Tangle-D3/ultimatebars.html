@@ -103,7 +103,6 @@
                 return ret;
             }
 
-            var products = [];
             var titles = [];
             var labels = [];
             var pre_map = [];
@@ -114,10 +113,6 @@
                 var temp = parseLabel(prod.columns[i]);
 
                 labels.push(parseLabel(prod.columns[i]));
-
-                if(!has(products, temp[1])) {
-                    products.push(temp[1]);
-                }
 
                 if(!has(titles, temp[0])) {
                     titles.push(temp[0]);
@@ -160,14 +155,12 @@
 
             var pre_data = buildData();
 
-
-            var barPadding = 1;
             var low = 30;
 
             var margin = {top: 20, right: 20, bottom: 30, left: 40, text: 16},
                 width = 600 + margin.left,
-                height = 300*products.length - margin.bottom,
-                barPadding = 10,
+                height = 1200 - margin.bottom,
+                barPadding = 6,
                 duration = 1000;
 
             var svg = d3.select("body").append("svg")
