@@ -157,7 +157,15 @@
 
             var low = 30;
 
-            var margin = {top: 20, right: 20, bottom: 30, left: 40, text: 16},
+            var maxLength = 0;
+
+            for(var i = 1; i < titles.length; i++) {
+                if(names.get(titles[i]).length > names.get(titles[maxLength]).length) {
+                    maxLength = i;
+                }
+            }
+
+            var margin = {top: 20, right: 20, bottom: 30, left: names.get(titles[maxLength]).length * 10, text: 16},
                 width = 600 + margin.left,
                 height = 1200 - margin.bottom,
                 barPadding = 6,
@@ -252,12 +260,11 @@
                         .transition()
                         .duration(duration)
                         .attr("width", function (d) {
-                            return x(d);
+                            return x(d) - margin.left;
                         })
 
                     text[j]
                         .attr("id", j)
-                        .attr("x", 0)
                         .attr("y", function (d, i) {
                             return y[j](i) + (height / (pre_data[j].length * 8))/2;
                         })
@@ -267,6 +274,9 @@
                         .attr("font-family", "sans-serif")
                         .attr("font-size", "16px")
                         .attr("fill", "grey")
+                        .attr("x", function (d, i, o) {
+                            return x(0) - o[i].clientWidth - 2;
+                        })
 
                      numbers[j]
                          .attr("x", margin.left)
@@ -277,10 +287,10 @@
                          .attr("id", j)
                          .attr("font-family", "sans-serif")
                          .attr("font-size", "16px")
-                         .attr("fill", "Honeydew")
+                         .attr("fill", "black")
                          .transition()
                          .duration(duration)
-                         .attr("x", function(d) { return x(d) - textLength(d) * 11 + 1 + margin.left; })
+                         .attr("x", function(d) { return x(d) + 3; })
                          .attrTween("text", function(d, i, o) {
                              var i = d3.interpolate(0, d),
                                  that = d3.select(this);
@@ -300,14 +310,14 @@
                         .transition()
                         .duration(duration)
                         .attr("width", function (d, i) {
-                            return x(pre_data[j][i]);
+                            return x(pre_data[j][i]) - margin.left;
                         });
 
                     numbers[j]
                         .transition()
                         .duration(duration)
                         .attr("x", function (d, i) {
-                            return x(pre_data[j][i]) - textLength(pre_data[j][i]) * 11 + 1 + margin.left;
+                            return x(pre_data[j][i]) + 3;
                         })
                         .attrTween("text", function(d, i, o) {
                             var that = d3.select(this),
